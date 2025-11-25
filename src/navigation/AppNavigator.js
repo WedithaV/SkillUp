@@ -16,61 +16,59 @@ import CourseDetailsScreen from '../screens/CourseDetailsScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function HomeStack() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="HomeMain" component={HomeScreen} />
-      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} />
-    </Stack.Navigator>
-  );
-}
-
+// Main Tabs (Home + Favorites + Profile)
 function MainTabs() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen
-        name="Home"
-        component={HomeStack}
-        options={{ tabBarIcon: ({ color }) => <Icon name="book-open" size={24} color={color} /> }}
+        name="HomeTab"
+        component={HomeScreen}
+        options={{ tabBarLabel: 'Home', tabBarIcon: ({ color }) => <Icon name="book-open" size={24} color={color} /> }}
       />
       <Tab.Screen
-        name="Favorites"
+        name="FavoritesTab"
         component={FavoritesScreen}
-        options={{ tabBarIcon: ({ color }) => <Icon name="heart" size={24} color={color} /> }}
+        options={{ tabBarLabel: 'Favorites', tabBarIcon: ({ color }) => <Icon name="heart" size={24} color={color} /> }}
       />
       <Tab.Screen
-        name="Profile"
+        name="ProfileTab"
         component={ProfileScreen}
-        options={{ tabBarIcon: ({ color }) => <Icon name="user" size={24} color={color} /> }}
+        options={{ tabBarLabel: 'Profile', tabBarIcon: ({ color }) => <Icon name="user" size={24} color={color} /> }}
       />
     </Tab.Navigator>
+  );
+}
+
+// Root Stack – CourseDetails is here so it's reachable from ANY tab
+function RootStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} />
+    </Stack.Navigator>
   );
 }
 
 export default function AppNavigator() {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
 
-  const checkLoginStatus = async () => {
-    const token = await AsyncStorage.getItem('userToken');
-    setIsLoggedIn(!!token);
-  };
-
   useEffect(() => {
-    checkLoginStatus();
+    const check = async () => {
+      const token = await AsyncStorage.getItem('userToken');
+      setIsLoggedIn(!!token);
+    };
+    check();
 
-    // Listen for any changes to userToken (login/logout)
-    const interval = setInterval(checkLoginStatus, 500);
+    const interval = setInterval(check, 500);
     return () => clearInterval(interval);
   }, []);
 
-  if (isLoggedIn === null) {
-    return null; // Loading
-  }
+  if (isLoggedIn === null) return null;
 
   return (
     <NavigationContainer>
       {isLoggedIn ? (
-        <MainTabs />
+        <RootStack />
       ) : (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={LoginScreen} />
