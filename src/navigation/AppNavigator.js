@@ -1,3 +1,4 @@
+// src/navigation/AppNavigator.js
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -12,10 +13,9 @@ import FavoritesScreen from '../screens/FavoritesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import CourseDetailsScreen from '../screens/CourseDetailsScreen';
 
-const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
-// Home Stack (Home + Details)
 function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -25,8 +25,7 @@ function HomeStack() {
   );
 }
 
-// Main Tabs
-function MainTabNavigator() {
+function MainTabs() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen
@@ -49,30 +48,35 @@ function MainTabNavigator() {
 }
 
 export default function AppNavigator() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(null);
+
+  const checkLoginStatus = async () => {
+    const token = await AsyncStorage.getItem('userToken');
+    setIsLoggedIn(!!token);
+  };
 
   useEffect(() => {
-    AsyncStorage.getItem('userToken').then(token => {
-      if (token) setIsLoggedIn(true);
-      setIsLoading(false);
-    });
+    checkLoginStatus();
+
+    // Listen for any changes to userToken (login/logout)
+    const interval = setInterval(checkLoginStatus, 500);
+    return () => clearInterval(interval);
   }, []);
 
-  if (isLoading) return null;
+  if (isLoggedIn === null) {
+    return null; // Loading
+  }
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {isLoggedIn ? (
-          <Stack.Screen name="MainApp" component={MainTabNavigator} />
-        ) : (
-          <>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
-          </>
-        )}
-      </Stack.Navigator>
+      {isLoggedIn ? (
+        <MainTabs />
+      ) : (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </Stack.Navigator>
+      )}
     </NavigationContainer>
   );
 }

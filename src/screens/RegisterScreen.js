@@ -1,37 +1,27 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useContext } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ThemeContext } from '../theme/ThemeContext';
 
 export default function RegisterScreen({ navigation }) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.text}>Register screen coming soon...</Text>
+  const { theme } = useContext(ThemeContext);
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.goBack()}
-      >
-        <Text style={styles.buttonText}>Back to Login</Text>
+  return (
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={[styles.title, { color: theme.text }]}>Register</Text>
+      <Text style={[styles.text, { color: theme.textSecondary }]}>
+        Registration coming soon...
+      </Text>
+      <TouchableOpacity style={[styles.button, { backgroundColor: theme.primary }]} onPress={() => navigation.goBack()}>
+        <Text style={styles.btnText}>Back to Login</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-  },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#2c3e50' },
-  text: { fontSize: 18, color: '#7f8c8d', marginVertical: 20 },
-  button: {
-    backgroundColor: '#2ecc71',
-    padding: 15,
-    borderRadius: 10,
-    width: '80%',
-    alignItems: 'center',
-  },
-  buttonText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: 32, fontWeight: 'bold', marginBottom: 20 },
+  text: { fontSize: 18, marginBottom: 40 },
+  button: { padding: 15, borderRadius: 10, width: 200, alignItems: 'center' },
+  btnText: { color: 'white', fontSize: 18 },
 });

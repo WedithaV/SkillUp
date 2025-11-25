@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
-import API from '../services/api';
+import { API } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemeContext } from '../theme/ThemeContext';
 
 export default function LoginScreen({ navigation }) {
+  const { theme } = useContext(ThemeContext);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,20 +26,16 @@ export default function LoginScreen({ navigation }) {
 
     setLoading(true);
     try {
-      const response = await API.post('/auth/login', {
-        username: username,
-        password: password,
-      });
+      const res = await API.post('/auth/login', { username, password });
 
-      // Save token and user info
-      await AsyncStorage.setItem('userToken', response.data.accessToken);
-      await AsyncStorage.setItem('userName', response.data.firstName + ' ' + response.data.lastName);
-      await AsyncStorage.setItem('userImage', response.data.image || '');
+      // Save user data
+      await AsyncStorage.setItem('userToken', res.data.accessToken);
+      await AsyncStorage.setItem('userName', `${res.data.firstName} ${res.data.lastName}`);
+      await AsyncStorage.setItem('userImage', res.data.image || '');
 
-      Alert.alert('Success', `Welcome back ${response.data.firstName}!`);
-      navigation.replace('MainApp');
-    } catch (error) {
-      console.log(error.response?.data);
+      // DO NOT use navigation.reset() or replace()
+      // AppNavigator will automatically switch to MainTabs
+    } catch (err) {
       Alert.alert('Login Failed', 'Wrong username or password');
     } finally {
       setLoading(false);
@@ -45,66 +43,110 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>UoM Course Finder</Text>
-      <Text style={styles.subtitle}>Sign in to continue</Text>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={[styles.title, { color: theme.text }]}>UoM Course Finder</Text>
+      <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+        Sign in to continue
+      </Text>
 
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.card,
+            color: theme.text,
+            borderColor: theme.border,
+          },
+        ]}
         placeholder="Username"
+        placeholderTextColor={theme.textSecondary}
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
       />
 
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.card,
+            color: theme.text,
+            borderColor: theme.border,
+          },
+        ]}
         placeholder="Password"
+        placeholderTextColor={theme.textSecondary}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
 
       {loading ? (
-        <ActivityIndicator size="large" color="#3498db" />
+        <ActivityIndicator size="large" color={theme.primary} />
       ) : (
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: theme.primary }]}
+          onPress={handleLogin}
+        >
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
       )}
 
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.link}>Don't have an account? Register</Text>
+        <Text style={[styles.link, { color: theme.primary }]}>
+          Don't have an account? Register
+        </Text>
       </TouchableOpacity>
 
-      {/* Working test accounts */}
-      <View style={styles.helpBox}>
-        <Text style={styles.helpTitle}>Test Accounts (100% working):</Text>
-        <Text style={styles.help}>• username: emilys      password: emilyspass</Text>
-        <Text style={styles.help}>• username: michaelw    password: michaelwpass</Text>
-        <Text style={styles.help}>• username: sophiai     password: sophiapass</Text>
-      </View>
+      <Text style={[styles.help, { color: theme.textSecondary }]}>
+        Test account: emilys / emilyspass
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8f9fa', padding: 30 },
-  title: { fontSize: 32, fontWeight: 'bold', color: '#2c3e50', marginBottom: 10 },
-  subtitle: { fontSize: 18, color: '#7f8c8d', marginBottom: 40 },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 30,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 18,
+    marginBottom: 40,
+  },
   input: {
     width: '100%',
-    backgroundColor: 'white',
     padding: 15,
     borderRadius: 10,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#ddd',
   },
-  button: { backgroundColor: '#3498db', padding: 15, borderRadius: 10, width: '100%', alignItems: 'center', marginTop: 10 },
-  buttonText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
-  link: { color: '#3498db', marginTop: 20, fontSize: 16 },
-  helpBox: { marginTop: 30, padding: 15, backgroundColor: '#ecf0f1', borderRadius: 10 },
-  helpTitle: { fontWeight: 'bold', color: '#2c3e50', marginBottom: 5 },
-  help: { color: '#7f8c8d', fontSize: 14 },
+  button: {
+    width: '100%',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  link: {
+    marginTop: 20,
+    fontSize: 16,
+  },
+  help: {
+    marginTop: 30,
+    fontSize: 14,
+    textAlign: 'center',
+  },
 });
