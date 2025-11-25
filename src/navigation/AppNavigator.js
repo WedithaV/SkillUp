@@ -3,10 +3,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Feather';
 
-// Temporary screens (we will replace later)
-const HomeScreen = () => <Icon name="home" size={50} color="#3498db" style={{ marginTop: 100 }} />;
-const FavoritesScreen = () => <Icon name="heart" size={50} color="#e74c3c" style={{ marginTop: 100 }} />;
-const ProfileScreen = () => <Icon name="user" size={50} color="#2ecc71" style={{ marginTop: 100 }} />;
+// Import real screens
+import HomeScreen from '../screens/HomeScreen';
+import FavoritesScreen from '../screens/FavoritesScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
