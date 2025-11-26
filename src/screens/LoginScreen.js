@@ -88,10 +88,6 @@ export default function LoginScreen({ navigation }) {
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
         <Text style={[styles.link, { color: theme.primary }]}>Create new account</Text>
       </TouchableOpacity>
-
-      <Text style={[styles.help, { color: theme.textSecondary }]}>
-        Test: emilys / emilyspass
-      </Text>
     </View>
   );
 }

@@ -54,7 +54,7 @@ export default function RegisterScreen({ navigation }) {
 
       <TextInput
         style={[styles.input, errors.username && styles.errorInput]}
-        placeholder="Username (min 3 chars)"
+        placeholder="Username"
         placeholderTextColor={theme.textSecondary}
         onChangeText={(text) => setValue('username', text)}
         onBlur={() => trigger('username')}
