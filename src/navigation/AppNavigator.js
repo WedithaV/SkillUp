@@ -1,10 +1,12 @@
 // src/navigation/AppNavigator.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Icon from 'react-native-vector-icons/Feather';
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { ThemeContext } from '../theme/ThemeContext';
 
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
@@ -16,30 +18,57 @@ import CourseDetailsScreen from '../screens/CourseDetailsScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Main Tabs (Home + Favorites + Profile)
 function MainTabs() {
+  const { theme } = useContext(ThemeContext);
+
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: theme.card,
+          borderTopColor: theme.border,
+        },
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textSecondary,
+      }}
+    >
       <Tab.Screen
         name="HomeTab"
         component={HomeScreen}
-        options={{ tabBarLabel: 'Home', tabBarIcon: ({ color }) => <Icon name="book-open" size={24} color={color} /> }}
+        options={{
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ color }) => (
+            <Feather name="book-open" size={24} color={color} />
+          ),
+        }}
       />
+
       <Tab.Screen
         name="FavoritesTab"
         component={FavoritesScreen}
-        options={{ tabBarLabel: 'Favorites', tabBarIcon: ({ color }) => <Icon name="heart" size={24} color={color} /> }}
+        options={{
+          tabBarLabel: 'Favorites',
+          tabBarIcon: ({ color }) => (
+            <Feather name="heart" size={24} color={color} />
+          ),
+        }}
       />
+
       <Tab.Screen
         name="ProfileTab"
         component={ProfileScreen}
-        options={{ tabBarLabel: 'Profile', tabBarIcon: ({ color }) => <Icon name="user" size={24} color={color} /> }}
+        options={{
+          tabBarLabel: 'Profile',
+          tabBarIcon: ({ color }) => (
+            <Feather name="user" size={24} color={color} />
+          ),
+        }}
       />
     </Tab.Navigator>
   );
 }
 
-// Root Stack – CourseDetails is here so it's reachable from ANY tab
 function RootStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
