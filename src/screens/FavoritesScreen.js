@@ -6,57 +6,97 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  StatusBar,
+  Platform,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector, useDispatch } from 'react-redux';
 import { ThemeContext } from '../theme/ThemeContext';
+import { toggleFavorite } from '../redux/favoritesSlice';
+import { Feather } from '@expo/vector-icons';
 
 export default function FavoritesScreen({ navigation }) {
   const { theme } = useContext(ThemeContext);
   const favorites = useSelector((state) => state.favorites.items);
+  const dispatch = useDispatch();
 
   if (favorites.length === 0) {
     return (
-      <View style={[styles.emptyContainer, { backgroundColor: theme.background }]}>
-        <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-          No favorite books yet ❤️
-        </Text>
-        <Text style={[styles.hint, { color: theme.textSecondary }]}>
-          Tap the heart on any book to save it here
-        </Text>
-      </View>
+      <SafeAreaView
+        style={[
+          styles.safeArea,
+          { backgroundColor: theme.background },
+        ]}
+      >
+        <View style={styles.emptyContainer}>
+          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+            No favorite courses yet
+          </Text>
+
+          <Text style={[styles.hint, { color: theme.textSecondary }]}>
+            Tap the heart on any course to save it here
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   const renderItem = ({ item }) => {
     const coverUrl = item.cover_i
       ? `https://covers.openlibrary.org/b/id/${item.cover_i}-M.jpg`
-      : 'https://via.placeholder.com/150x200?text=No+Image';
+      : 'https://via.placeholder.com/150x200';
 
     return (
-      <TouchableOpacity
-        style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}
-        onPress={() => navigation.navigate('CourseDetails', { course: item })}
-        activeOpacity={0.8}
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: theme.card, borderColor: theme.border },
+        ]}
       >
-        <Image source={{ uri: coverUrl }} style={styles.image} />
-        <View style={styles.info}>
-          <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
-            {item.title || 'Untitled Book'}
-          </Text>
-          <Text style={[styles.author, { color: theme.textSecondary }]}>
-            {item.author_name?.join(', ') || 'Unknown Author'}
-          </Text>
-          <Text style={[styles.year, { color: theme.primary }]}>
-            {item.first_publish_year || 'Year N/A'}
-          </Text>
-        </View>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('CourseDetails', { course: item })}
+          activeOpacity={0.85}
+          style={{ flexDirection: 'row' }}
+        >
+          <Image source={{ uri: coverUrl }} style={styles.image} />
+
+          <View style={styles.info}>
+            <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
+              {item.title}
+            </Text>
+
+            <Text style={[styles.author, { color: theme.textSecondary }]}>
+              {item.author_name?.join(', ') || 'Unknown Author'}
+            </Text>
+
+            <Text style={[styles.year, { color: theme.primary }]}>
+              {item.first_publish_year || 'N/A'}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* TOP-RIGHT FLOATING HEART */}
+        <TouchableOpacity
+          style={styles.favIcon}
+          onPress={() => dispatch(toggleFavorite(item))}
+        >
+          <Feather name="heart" size={26} color={theme.danger} />
+        </TouchableOpacity>
+      </View>
     );
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.header, { color: theme.text }]}>My Favorite Books</Text>
+    <SafeAreaView
+      style={[
+        styles.safeArea,
+        { backgroundColor: theme.background },
+      ]}
+    >
+      <Text style={[styles.header, { color: theme.text }]}>
+        My Favorite Courses
+      </Text>
+
       <FlatList
         data={favorites}
         renderItem={renderItem}
@@ -64,68 +104,83 @@ export default function FavoritesScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 16 : 16,
   },
-  header: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    padding: 20,
-    textAlign: 'center',
-  },
+
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
   },
+
   emptyText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginBottom: 10,
   },
+
   hint: {
     fontSize: 16,
     textAlign: 'center',
   },
-  card: {
-    flexDirection: 'row',
-    marginHorizontal: 15,
-    marginTop: 12,
-    borderRadius: 12,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    borderWidth: 1,
+
+  header: {
+    fontSize: 26,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 18,
   },
+
+  card: {
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 22,
+    elevation: 3,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+
   image: {
     width: 100,
-    height: 140,
+    height: 145,
+    backgroundColor: '#ccc',
   },
+
   info: {
     flex: 1,
-    padding: 15,
+    padding: 14,
     justifyContent: 'center',
   },
+
   title: {
     fontSize: 17,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
+
   author: {
     fontSize: 14,
     marginTop: 6,
   },
+
   year: {
     fontSize: 13,
     marginTop: 6,
     fontWeight: '600',
+  },
+
+  favIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 8,
   },
 });

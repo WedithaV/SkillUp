@@ -3,64 +3,66 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   TouchableOpacity,
-  Alert,
+  StatusBar,
+  Platform,
 } from 'react-native';
 import { ThemeContext } from '../theme/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Icon from 'react-native-vector-icons/Feather';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [userName, setUserName] = useState('Guest');
-  const [userImage, setUserImage] = useState(null);
 
   const loadUser = async () => {
     const name = await AsyncStorage.getItem('userName');
-    const image = await AsyncStorage.getItem('userImage');
     if (name) setUserName(name);
-    if (image) setUserImage(image);
   };
 
   const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          await AsyncStorage.multiRemove(['userToken', 'userName', 'userImage']);
-          // DO NOT use navigation.reset()
-          // AppNavigator will automatically detect token removal and go to Login
-        },
-      },
-    ]);
+    await AsyncStorage.multiRemove(['userToken', 'userName']);
   };
 
   useEffect(() => {
     loadUser();
-    const interval = setInterval(loadUser, 1000);
-    return () => clearInterval(interval);
   }, []);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Image
-        source={{ uri: userImage || 'https://via.placeholder.com/120' }}
-        style={styles.avatar}
-      />
+    <SafeAreaView
+      style={[
+        styles.safeArea,
+        { backgroundColor: theme.background },
+      ]}
+    >
+      {/* ALWAYS SAME AVATAR */}
+      <View
+        style={[
+          styles.defaultAvatar,
+          { backgroundColor: theme.card, borderColor: theme.border },
+        ]}
+      >
+        <Feather name="user" size={60} color={theme.textSecondary} />
+      </View>
+
       <Text style={[styles.name, { color: theme.text }]}>{userName}</Text>
-      <Text style={[styles.welcome, { color: theme.textSecondary }]}>
+
+      <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
         Welcome to UoM Course Finder
       </Text>
 
       <TouchableOpacity
         style={[styles.button, { backgroundColor: theme.primary }]}
         onPress={toggleTheme}
+        activeOpacity={0.8}
       >
-        <Icon name={theme.mode === 'light' ? 'moon' : 'sun'} size={24} color="white" />
-        <Text style={styles.buttonText}>
+        <Feather
+          name={theme.mode === 'light' ? 'moon' : 'sun'}
+          size={22}
+          color="white"
+        />
+        <Text style={styles.btnText}>
           Switch to {theme.mode === 'light' ? 'Dark' : 'Light'} Mode
         </Text>
       </TouchableOpacity>
@@ -68,47 +70,58 @@ export default function ProfileScreen() {
       <TouchableOpacity
         style={[styles.button, { backgroundColor: theme.danger }]}
         onPress={handleLogout}
+        activeOpacity={0.8}
       >
-        <Icon name="log-out" size={20} color="white" />
-        <Text style={styles.buttonText}>Logout</Text>
+        <Feather name="log-out" size={20} color="white" />
+        <Text style={styles.btnText}>Logout</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 16 : 16,
   },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+
+  defaultAvatar: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    marginTop: 20,
     marginBottom: 20,
   },
+
   name: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
-  welcome: {
-    fontSize: 18,
-    marginVertical: 20,
+
+  subtitle: {
+    fontSize: 16,
+    marginTop: 8,
+    marginBottom: 25,
   },
+
   button: {
     flexDirection: 'row',
-    padding: 15,
-    borderRadius: 10,
+    padding: 14,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 15,
-    width: 250,
+    marginTop: 14,
+    width: 260,
     justifyContent: 'center',
   },
-  buttonText: {
+
+  btnText: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 17,
     marginLeft: 10,
+    fontWeight: '600',
   },
 });

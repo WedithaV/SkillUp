@@ -6,25 +6,25 @@ export const ThemeContext = createContext();
 export const themes = {
   light: {
     mode: 'light',
-    background: '#f8f9fa',
-    card: '#ffffff',
-    text: '#2c3e50',
-    textSecondary: '#7f8c8d',
-    primary: '#3498db',
-    danger: '#e74c3c',
-    success: '#27ae60',
-    border: '#ddd',
+    background: '#F4F6F8',
+    card: '#FFFFFF',
+    text: '#1E293B',
+    textSecondary: '#64748B',
+    primary: '#3B82F6',
+    danger: '#EF4444',
+    success: '#22C55E',
+    border: '#E2E8F0',
   },
   dark: {
     mode: 'dark',
-    background: '#121212',
-    card: '#1e1e1e',
-    text: '#e0e0e0',
-    textSecondary: '#b0b0b0',
-    primary: '#5fa8d3',
-    danger: '#e74c3c',
-    success: '#4ade80',
-    border: '#333',
+    background: '#0F172A',
+    card: '#1E293B',
+    text: '#F1F5F9',
+    textSecondary: '#94A3B8',
+    primary: '#60A5FA',
+    danger: '#F87171',
+    success: '#4ADE80',
+    border: '#334155',
   },
 };
 
@@ -32,17 +32,15 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(themes.light);
 
   const toggleTheme = async () => {
-    const newTheme = theme.mode === 'light' ? themes.dark : themes.light;
-    setTheme(newTheme);
-    await AsyncStorage.setItem('appTheme', newTheme.mode);
+    const next = theme.mode === 'light' ? themes.dark : themes.light;
+    setTheme(next);
+    await AsyncStorage.setItem('appTheme', next.mode);
   };
 
   useEffect(() => {
     (async () => {
       const saved = await AsyncStorage.getItem('appTheme');
-      if (saved === 'dark') {
-        setTheme(themes.dark);
-      }
+      if (saved === 'dark') setTheme(themes.dark);
     })();
   }, []);
 
